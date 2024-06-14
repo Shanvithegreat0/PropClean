@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Reports</title>
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .menu-icon {
+            font-size: 30px;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #111;
+            color: #FFF;
+        }
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(17, 17, 17, 0.95); /* Slight transparency */
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            z-index: 3; /* Ensure sidebar is on top of everything */
+        }
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #FDFDFD;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 30px;
+        }
+        .container {
+            padding: 20px;
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #7243CD;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #7243CD;
+            color: #FFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #402773;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-icon" onclick="openNav()">&#9776;</div>
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+        <a href="land.html">Homepage</a>
+        <a href="#" id="logoutBtn">Logout</a>
+    </div>
+    <div class="container">
+        <h1>Daily Reports</h1>
+        <table id="report-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Completion Time</th>
+                    <th>Completed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Reports will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+        }
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
+            authDomain: "propclean.firebaseapp.com",
+            databaseURL: "https://propclean-default-rtdb.firebaseio.com",
+            projectId: "propclean",
+            storageBucket: "propclean.appspot.com",
+            messagingSenderId: "795234019311",
+            appId: "1:795234019311:web:369566b90b91139164781a",
+            measurementId: "G-CE3LFP4HSJ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Fetch daily tasks and generate report
+        function fetchTasks() {
+            const reportTableBody = document.getElementById('report-table').getElementsByTagName('tbody')[0];
+            reportTableBody.innerHTML = ''; // Clear previous data
+
+            const today = new Date().toISOString().split('T')[0]; // Get today's date
+
+            database.ref('Daily Tasks').once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    snapshot.forEach(taskSnapshot => {
+                        const task = taskSnapshot.val();
+                        const taskRow = document.createElement('tr');
+
+                        // Add task data to the row
+                        taskRow.innerHTML = `
+                            <td>${task.task}</td>
+                            <td>${task.time}</td>
+                            <td>${task.status}</td>
+                            <td>${task.uploadTime || 'N/A'}</td>
+                            <td>${task.completedBy || 'N/A'}</td>
+                        `;
+                        reportTableBody.appendChild(taskRow);
+                    });
+                }
+            }).catch(error => {
+                console.error('Error fetching tasks:', error);
+            });
+        }
+
+        // Generate report at 8 PM daily
+        function scheduleDailyReport() {
+            const now = new Date();
+            const next8pm = new Date();
+            next8pm.setHours(20, 0, 0, 0); // Set to 8 PM today
+
+            if (now > next8pm) {
+                // If it's already past 8 PM today, set for tomorrow
+                next8pm.setDate(next8pm.getDate() + 1);
+            }
+
+            const timeUntil8pm = next8pm - now;
+
+            setTimeout(() => {
+                fetchTasks();
+                setInterval(fetchTasks, 24 * 60 * 60 * 1000); // Repeat every 24 hours
+            }, timeUntil8pm);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchTasks();
+            scheduleDailyReport();
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+            auth.signOut().then(() => {
+                window.location.href = "index.html"; // Redirect to login page
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+            });
+        });
+    </script>
+</body>
+</html>

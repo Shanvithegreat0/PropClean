@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Propclean Landing</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                font-family: 'Rubik', sans-serif;
+                background-color: hsl(0, 0%, 100%);
+                color: #0e0d0c;
+                user-select: none;
+            }
+
+            .menu-icon {
+                font-size: 30px;
+                cursor: pointer;
+                padding: 10px;
+                background-color: #111;
+                color: #FFF;
+            }
+
+            .sidebar {
+                height: 100%;
+                width: 0;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background-color: #111;
+                overflow-x: hidden;
+                transition: 0.5s;
+                padding-top: 60px;
+                z-index: 1;
+            }
+
+            .sidebar a {
+                padding: 15px 25px;
+                text-decoration: none;
+                font-size: 25px;
+                color: #FDFDFD;
+                display: block;
+                transition: 0.3s;
+            }
+
+            .sidebar a:hover {
+                background-color: #575757;
+            }
+
+            .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 25px;
+                font-size: 30px;
+                color: #FFF;
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                max-width: 320px;
+                margin: 30px auto;
+            }
+
+            .head {
+                text-align: center;
+                font-size: 30px;
+                padding: 10px;
+            }
+
+            button {
+                color: #FDFDFD;
+                background-color: #7243CD;
+                border: 0;
+                padding: 15px;
+                border-radius: 8px;
+                font-size: 20px;
+                text-align: center;
+                font-family: 'Rubik', sans-serif;
+                margin-top: 10px;
+            }
+
+            button:hover {
+                background-color: #402773;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="menu-icon" onclick="openNav()">&#9776;</div>
+        <div id="sidebar" class="sidebar">
+            <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+            <a href="land.html">Homepage</a>
+            <a href="#" id="adminDashboardLink" style="display: none;" onclick="navigateTo('admin-dashboard.html')">Admin Dashboard</a>
+            <a href="#" id="logoutBtn">Logout</a>
+        </div>
+        <div class="container">
+            <div class="head">Welcome to Propclean</div>
+            <button onclick="navigateTo('daily.html')">Daily Tasks</button>
+            <button onclick="navigateTo('reports.html')">See Reports</button>
+            <button onclick="navigateTo('calendar.html')">View Tasks</button>
+        </div>
+        <script>
+            function openNav() {
+                document.getElementById("sidebar").style.width = "250px";
+            }
+
+            function closeNav() {
+                document.getElementById("sidebar").style.width = "0";
+            }
+
+            function navigateTo(page) {
+                window.location.href = page;
+            }
+
+            // Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
+                authDomain: "propclean.firebaseapp.com",
+                databaseURL: "https://propclean-default-rtdb.firebaseio.com",
+                projectId: "propclean",
+                storageBucket: "propclean.appspot.com",
+                messagingSenderId: "795234019311",
+                appId: "1:795234019311:web:369566b90b91139164781a",
+                measurementId: "G-CE3LFP4HSJ"
+            };
+
+            const adminEmails = ["shanvishukla39@gmail.com", "admin2@example.com"]; // List of admin emails
+
+            // Load Firebase scripts
+            const scriptApp = document.createElement('script');
+            scriptApp.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
+            document.head.appendChild(scriptApp);
+
+            const scriptAuth = document.createElement('script');
+            scriptAuth.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js";
+            document.head.appendChild(scriptAuth);
+
+            scriptAuth.onload = function() {
+                firebase.initializeApp(firebaseConfig);
+
+                const auth = firebase.auth();
+
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        if (adminEmails.includes(user.email)) {
+                            document.getElementById("adminDashboardLink").style.display = "block";
+                        }
+                    } else {
+                        window.location.href = "index.html"; // Redirect to login page if user is not authenticated
+                    }
+                });
+
+                document.getElementById("logoutBtn").addEventListener("click", function() {
+                    auth.signOut().then(() => {
+                        window.location.href = "index.html"; // Redirect to login page
+                    }).catch((error) => {
+                        console.error("Error signing out:", error);
+                    });
+                });
+            };
+        </script>
+    </body>
+</html>

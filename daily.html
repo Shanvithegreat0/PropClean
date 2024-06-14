@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+    <title>Propclean</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Rubik', sans-serif;
+            background-color: hsl(259, 33%, 87%);
+            color: #0e0d0c;
+            user-select: none;
+        }
+
+        .menu-icon {
+            font-size: 30px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            z-index: 1;
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #FDFDFD;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 30px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 320px;
+            margin: 30px auto;
+        }
+
+        img {
+            width: 150px;
+            margin: 0 auto;
+        }
+
+        input {
+            color: #7243CD;
+            background-color: #e3e4e7;
+            border:2px;
+            border-color: #7243CD;
+            border: 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 20px;
+            text-align: center;
+            font-family: 'Rubik', sans-serif;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            color: #FDFDFD;
+            background-color: #7243CD;
+            border: 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 20px;
+            text-align: center;
+            font-family: 'Rubik', sans-serif;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #402773;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        ul li {
+            font-size: 20px;
+            background-color: #FFFDF8;
+            padding: 15px;
+            border-radius: 8px;
+            flex-grow: 1;
+            text-align: center;
+            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        ul li:hover {
+            background-color: #FFECC7;
+            cursor: pointer;
+        }
+
+        .logo {
+            border-radius: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-icon" onclick="openNav()">&#9776;</div>
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+        <a href="land.html">Homepage</a>
+        <a href="#" id="logoutBtn">Logout</a>
+    </div>
+    <div class="container">
+        <h1>Daily Tasks</h1>
+        <ul id="shopping-list">
+            <!-- Tasks will be dynamically added here -->
+        </ul>
+    </div>
+    <script>
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
+            authDomain: "propclean.firebaseapp.com",
+            databaseURL: "https://propclean-default-rtdb.firebaseio.com",
+            projectId: "propclean",
+            storageBucket: "propclean.appspot.com",
+            messagingSenderId: "795234019311",
+            appId: "1:795234019311:web:369566b90b91139164781a",
+            measurementId: "G-CE3LFP4HSJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check authentication state when the page loads
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "index.html"; // Redirect to login page if user is not authenticated
+            }
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+            signOut(auth).then(() => {
+                // Sign-out successful.
+                window.location.href = "index.html"; // Redirect to login page
+            }).catch((error) => {
+                // An error happened.
+                console.error("Error signing out:", error);
+            });
+        });
+    </script>
+    <script src="daily.js" type="module"></script>
+</body>
+</html>
