@@ -3,212 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Report</title>
+    <title>Task List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
+        body {
             font-family: 'Rubik', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        .menu-icon {
-            font-size: 30px;
-            cursor: pointer;
-            padding: 10px;
-            background-color: #111;
-            color: #FFF;
-        }
-
-        .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #111;
-            overflow-x: hidden;
-            transition: 0.5s;
-            padding-top: 60px;
-            z-index: 1;
-        }
-
-        .sidebar a {
-            padding: 15px 25px;
-            text-decoration: none;
-            font-size: 25px;
-            color: #FDFDFD;
-            display: block;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #575757;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 25px;
-            font-size: 30px;
-            color: #FFF;
-        }
-
-        .container {
+            background-color: #f0f0f0;
+            margin: 0;
             padding: 20px;
-            max-width: 900px;
-            margin: 50px auto;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
         }
-
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
         h1 {
             text-align: center;
-            font-size: 24px;
         }
-
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-
         th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
-
         th {
             background-color: #f2f2f2;
         }
-
-        @media (max-width: 600px) {
-            .menu-icon {
-                font-size: 24px;
-            }
-
-            .sidebar a {
-                font-size: 20px;
-            }
-
-            .close-btn {
-                font-size: 24px;
-            }
+        .status-complete {
+            color: green;
+        }
+        .status-incomplete {
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div class="menu-icon" onclick="openNav()">&#9776;</div>
-    <div id="sidebar" class="sidebar">
-        <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
-        <a href="land.html">Homepage</a>
-        <a href="#" id="logoutBtn">Logout</a>
-    </div>
     <div class="container">
-        <h1>Daily Report</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Task Name</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Completion Time</th>
-                    <th>Completed By</th>
-                </tr>
-            </thead>
-            <tbody id="report-table-body">
-                <!-- Report rows will be dynamically added here -->
-            </tbody>
-        </table>
+        <h1>Daily Tasks</h1>
+        <div class="table-container">
+            <table id="task-table">
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Upload Time</th>
+                        <th>Completed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Task rows will be appended here -->
+                </tbody>
+            </table>
+        </div>
     </div>
-    <script>
-        function openNav() {
-            document.getElementById("sidebar").style.width = "250px";
-        }
-
-        function closeNav() {
-            document.getElementById("sidebar").style.width = "0";
-        }
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
-            authDomain: "propclean.firebaseapp.com",
-            databaseURL: "https://propclean-default-rtdb.firebaseio.com",
-            projectId: "propclean",
-            storageBucket: "propclean.appspot.com",
-            messagingSenderId: "795234019311",
-            appId: "1:795234019311:web:369566b90b91139164781a",
-            measurementId: "G-CE3LFP4HSJ"
-        };
-
-        // Initialize Firebase
-        const scriptApp = document.createElement('script');
-        scriptApp.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
-        scriptApp.onload = () => {
-            const scriptDatabase = document.createElement('script');
-            scriptDatabase.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js";
-            scriptDatabase.onload = () => {
-                const scriptAuth = document.createElement('script');
-                scriptAuth.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js";
-                scriptAuth.onload = initializeApp;
-                document.head.appendChild(scriptAuth);
-            };
-            document.head.appendChild(scriptDatabase);
-        };
-        document.head.appendChild(scriptApp);
-
-        function initializeApp() {
-            firebase.initializeApp(firebaseConfig);
-
-            const database = firebase.database();
-            const tasksRef = database.ref('Daily Tasks');
-
-            function fetchReportData() {
-                const reportTableBody = document.getElementById('report-table-body');
-
-                tasksRef.once('value', snapshot => {
-                    if (snapshot.exists()) {
-                        const tasks = snapshot.val();
-                        console.log('Tasks:', tasks); // Log tasks for debugging
-                        let reportHTML = '';
-                        for (const taskId in tasks) {
-                            const task = tasks[taskId];
-                            console.log('Processing task:', task); // Log each task for debugging
-                            reportHTML += `
-                                <tr>
-                                    <td>${task.task}</td>
-                                    <td>${task.date}</td>
-                                    <td>${task.status}</td>
-                                    <td>${task.uploadTime ? new Date(task.uploadTime).toLocaleString() : 'N/A'}</td>
-                                    <td>${task.completedBy ? task.completedBy : 'N/A'}</td>
-                                </tr>
-                            `;
-                        }
-                        reportTableBody.innerHTML = reportHTML;
-                    } else {
-                        reportTableBody.innerHTML = '<tr><td colspan="5">No tasks found</td></tr>';
-                    }
-                }).catch(error => {
-                    console.error('Error fetching report data:', error);
-                });
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                fetchReportData();
-            });
-
-            document.getElementById("logoutBtn").addEventListener("click", function() {
-                firebase.auth().signOut().then(() => {
-                    window.location.href = "index.html"; // Redirect to login page
-                }).catch((error) => {
-                    console.error("Error signing out:", error);
-                });
-            });
-        }
-    </script>
+    <script type="module" src="fetch-tasks.js"></script>
 </body>
 </html>
