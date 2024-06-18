@@ -155,8 +155,8 @@
         }
     </script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
@@ -169,9 +169,12 @@
             measurementId: "G-CE3LFP4HSJ"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        // Initialize Firebase only if it hasn't been initialized already
+        if (!getApps().length) {
+            initializeApp(firebaseConfig);
+        }
+
+        const auth = getAuth();
 
         // Check authentication state when the page loads
         onAuthStateChanged(auth, (user) => {
