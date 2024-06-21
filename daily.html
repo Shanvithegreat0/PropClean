@@ -71,16 +71,13 @@
         input {
             color: #7243CD;
             background-color: #e3e4e7;
-            border:2px;
-            border-color: #7243CD;
-            border: 0;
-            padding: 15px;
+            border: 2px solid #7243CD;
             border-radius: 8px;
+            padding: 15px;
             font-size: 20px;
             text-align: center;
             font-family: 'Rubik', sans-serif;
             margin: 10px 0;
-            flex-wrap: wrap;
         }
 
         button {
@@ -104,16 +101,15 @@
             list-style-type: none;
             padding: 0;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
         }
 
         ul li {
-            font-size: 20px;
+            font-size: 18px;
             background-color: #FFFDF8;
             padding: 15px;
             border-radius: 8px;
-            flex-grow: 1;
             text-align: center;
             box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
         }
@@ -125,6 +121,18 @@
 
         .logo {
             border-radius: 100px;
+        }
+
+        @media (max-width: 600px) {
+            ul {
+                padding: 0;
+                gap: 5px;
+            }
+
+            ul li {
+                font-size: 16px;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -157,6 +165,7 @@
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAn2hwFs7g1StFNAGVbiOxTTcLbuNq1le0",
@@ -175,11 +184,15 @@
         }
 
         const auth = getAuth();
+        const database = getDatabase();
+        const dailyTasksRef = ref(database, "Daily Tasks");
 
         // Check authentication state when the page loads
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "index.html"; // Redirect to login page if user is not authenticated
+            } else {
+                fetchAndDisplayTasks(); // Fetch tasks only if the user is authenticated
             }
         });
 
@@ -192,7 +205,58 @@
                 console.error("Error signing out:", error);
             });
         });
+
+        const shoppingListEl = document.getElementById("shopping-list");
+
+        function fetchAndDisplayTasks() {
+            console.log("Fetching tasks...");
+            onValue(dailyTasksRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    console.log("Tasks data found.");
+                    const tasksArray = Object.entries(snapshot.val());
+
+                    // Filter out tasks without a defined 'time' field
+                    const validTasksArray = tasksArray.filter(([id, taskData]) => taskData.time);
+
+                    // Sort tasks by time in ascending order
+                    validTasksArray.sort((a, b) => {
+                        const timeA = parseTime(a[1].time);
+                        const timeB = parseTime(b[1].time);
+                        return timeA - timeB;
+                    });
+
+                    clearShoppingListEl();
+
+                    validTasksArray.forEach(([id, taskData]) => {
+                        const taskItem = document.createElement("li");
+                        const taskStatus = taskData.status === "complete" ? "✓" : "✗";
+                        taskItem.textContent = `${taskData.task} - ${taskData.time} - ${taskStatus}`;
+                        taskItem.addEventListener("click", () => {
+                            window.location.href = `taskDetails.html?id=${id}`;
+                        });
+                        shoppingListEl.appendChild(taskItem);
+                    });
+                } else {
+                    console.log("No tasks found.");
+                    shoppingListEl.innerHTML = "No tasks found";
+                }
+            }, (error) => {
+                console.error("Error fetching tasks:", error);
+                shoppingListEl.innerHTML = "Error fetching tasks";
+            });
+        }
+
+        function parseTime(timeString) {
+            if (!timeString) return 0;
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function clearShoppingListEl() {
+            shoppingListEl.innerHTML = "";
+        }
+
+        fetchAndDisplayTasks();
     </script>
-    <script src="daily.js" type="module"></script>
 </body>
 </html>
