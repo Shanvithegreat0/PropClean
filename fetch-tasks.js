@@ -28,8 +28,11 @@ function fetchAndDisplayTasks() {
         if (snapshot.exists()) {
             const tasksArray = Object.entries(snapshot.val());
 
+            // Filter out tasks without a defined 'time' field
+            const validTasksArray = tasksArray.filter(([id, taskData]) => taskData.time);
+
             // Sort tasks by time in ascending order
-            tasksArray.sort((a, b) => {
+            validTasksArray.sort((a, b) => {
                 const timeA = parseTime(a[1].time);
                 const timeB = parseTime(b[1].time);
                 return timeA - timeB;
@@ -37,7 +40,7 @@ function fetchAndDisplayTasks() {
 
             taskTableBody.innerHTML = "";
 
-            tasksArray.forEach(([id, taskData]) => {
+            validTasksArray.forEach(([id, taskData]) => {
                 const status = taskData.status ? taskData.status.toLowerCase() : "incomplete";
                 const statusClass = status === "complete" ? "status-complete" : "status-incomplete";
                 const statusText = status === "complete" ? "Complete" : "Incomplete";
@@ -59,6 +62,7 @@ function fetchAndDisplayTasks() {
 }
 
 function parseTime(timeString) {
+    if (!timeString) return 0;
     const [hours, minutes] = timeString.split(":").map(Number);
     return hours * 60 + minutes;
 }
