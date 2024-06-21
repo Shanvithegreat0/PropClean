@@ -17,12 +17,15 @@ const shoppingListEl = document.getElementById("shopping-list");
 
 // Fetch and display tasks sorted by time in ascending order
 function fetchAndDisplayTasks() {
-    onValue(dailyTasksRef, function(snapshot) {
+    onValue(dailyTasksRef, (snapshot) => {
         if (snapshot.exists()) {
-            let tasksArray = Object.entries(snapshot.val());
+            const tasksArray = Object.entries(snapshot.val());
+
+            // Filter out tasks without a defined 'time' field
+            const validTasksArray = tasksArray.filter(([id, taskData]) => taskData.time);
 
             // Sort tasks by time in ascending order
-            tasksArray.sort((a, b) => {
+            validTasksArray.sort((a, b) => {
                 const timeA = parseTime(a[1].time);
                 const timeB = parseTime(b[1].time);
                 return timeA - timeB;
@@ -30,9 +33,11 @@ function fetchAndDisplayTasks() {
 
             clearShoppingListEl();
 
-            tasksArray.forEach(function(taskItem) {
-                let taskData = taskItem[1];
-                appendTaskToShoppingListEl(taskItem[0], taskData);
+            validTasksArray.forEach(([id, taskData]) => {
+                const taskItem = document.createElement("li");
+                const taskStatus = taskData.status === "complete" ? "✓" : "✗";
+                taskItem.textContent = `${taskData.task} - ${taskData.time} - ${taskStatus}`;
+                shoppingListEl.appendChild(taskItem);
             });
         } else {
             shoppingListEl.innerHTML = "No tasks found";
@@ -41,21 +46,13 @@ function fetchAndDisplayTasks() {
 }
 
 function parseTime(timeString) {
+    if (!timeString) return 0;
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
 }
 
 function clearShoppingListEl() {
     shoppingListEl.innerHTML = "";
-}
-
-function appendTaskToShoppingListEl(taskId, taskData) {
-    let newEl = document.createElement("li");
-    newEl.textContent = `${taskData.task} - ${taskData.time}`;
-    newEl.addEventListener("click", function() {
-        window.location.href = `taskDetails.html?id=${taskId}`;
-    });
-    shoppingListEl.appendChild(newEl);
 }
 
 // Initial fetch
